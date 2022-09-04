@@ -21,6 +21,7 @@ import Joi from '@hapi/joi';
         RABBITMQ_PASSWORD: Joi.string().required(),
         RABBITMQ_HOST: Joi.string().required(),
         RABBITMQ_QUEUE_NAME: Joi.string().required(),
+        GRPC_CONNECTION_URL: Joi.string().required(),
         PORT: Joi.number(),
       }),
     }),
