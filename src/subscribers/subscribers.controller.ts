@@ -1,5 +1,10 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern } from '@nestjs/microservices';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { CreateSubscriberDto } from './dto/create-subscriber.dto';
 import { SubscribersService } from './subscribers.service';
 
@@ -8,9 +13,20 @@ export class SubscribersController {
   constructor(private readonly subscribersService: SubscribersService) {}
 
   // Using the event-based communication
-  @EventPattern({ cmd: 'add-subscriber' })
-  addSubscriber(subscriber: CreateSubscriberDto) {
-    return this.subscribersService.addSubscriber(subscriber);
+  @MessagePattern({ cmd: 'add-subscriber' })
+  async addSubscriber(
+    @Payload() subscriber: CreateSubscriberDto,
+    @Ctx() context: RmqContext,
+  ) {
+    const newSubscriber = await this.subscribersService.addSubscriber(
+      subscriber,
+    );
+
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    channel.ack(originalMsg);
+
+    return newSubscriber;
   }
 
   // Using the TCP layer
